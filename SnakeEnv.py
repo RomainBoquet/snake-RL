@@ -34,8 +34,7 @@ class SnakeEnv(Env):
 
     def step(self, action):
         """
-        Exécute une action (0=haut, 1=bas, 2=gauche, 3=droite).
-        Retourne (observation, reward, done, info).
+        Exécute une action et retourne (new_state, reward, done, info).
         """
         # Mise à jour de la direction
         self._update_direction(action)
@@ -44,30 +43,32 @@ class SnakeEnv(Env):
         head_x, head_y = self.snake[0]
         new_head = (head_x + self.direction[0], head_y + self.direction[1])
 
-        # Initialiser la récompense à une valeur par défaut
-        reward = -0.1  # Récompense mineure pour chaque mouvement (optionnel)
+        # Initialisation de reward à une valeur par défaut
+        reward = -0.1  # Récompense mineure pour un déplacement (optionnel)
+        self.done = False
 
-        # Vérification des collisions
+        # Vérifier les collisions
         if (
             new_head[0] < 0 or new_head[0] >= self.grid_size or
             new_head[1] < 0 or new_head[1] >= self.grid_size or
             new_head in self.snake
         ):
             self.done = True
-            reward = -10  # Récompense négative pour la collision
+            reward = -10  # Récompense négative pour collision
             return self._get_observation(), reward, self.done, {}
 
         # Mise à jour du serpent
         self.snake.insert(0, new_head)
         if new_head == self.food:
             reward = 10  # Récompense pour avoir mangé la nourriture
-            self.food = self._place_food()  # Nouvelle nourriture
+            self.food = self._place_food()  # Placer une nouvelle nourriture
             self.score += 1
         else:
-            self.snake.pop()  # Retire la queue
+            self.snake.pop()  # Retirer la queue pour garder la taille
 
-        # Retourne l'état du jeu
+        # Retourner l'état
         return self._get_observation(), reward, self.done, {}
+
 
     def render(self, mode="human"):
         """Affiche l'environnement à l'écran."""
@@ -127,3 +128,15 @@ class SnakeEnv(Env):
         grid[food_x, food_y] = 2
 
         return grid
+
+
+env = SnakeEnv()
+
+state = env.reset()
+done = False
+while not done:
+    action = env.action_space.sample()  # Action aléatoire
+    state, reward, done, info = env.step(action)
+    env.render()
+env.close()
+
