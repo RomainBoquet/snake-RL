@@ -156,7 +156,7 @@ def main():
             draw_score(score)
             pygame.display.flip()
 
-            clock.tick(8)  # Limite la vitesse à 10 FPS
+            clock.tick(10)  # Limite la vitesse à 10 FPS
 
         # Afficher l'écran de fin de jeu
         choice = game_over_screen(score)

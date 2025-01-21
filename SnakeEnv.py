@@ -128,15 +128,3 @@ class SnakeEnv(Env):
         grid[food_x, food_y] = 2
 
         return grid
-
-
-env = SnakeEnv()
-
-state = env.reset()
-done = False
-while not done:
-    action = env.action_space.sample()  # Action aléatoire
-    state, reward, done, info = env.step(action)
-    env.render()
-env.close()
-
