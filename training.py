@@ -9,3 +9,4 @@ model = PPO("MlpPolicy", env, verbose=1)
 
 # Entraînez l'agent
 model.learn(total_timesteps=10000)
+
