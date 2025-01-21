@@ -44,6 +44,9 @@ class SnakeEnv(Env):
         head_x, head_y = self.snake[0]
         new_head = (head_x + self.direction[0], head_y + self.direction[1])
 
+        # Initialiser la récompense à une valeur par défaut
+        reward = -0.1  # Récompense mineure pour chaque mouvement (optionnel)
+
         # Vérification des collisions
         if (
             new_head[0] < 0 or new_head[0] >= self.grid_size or
