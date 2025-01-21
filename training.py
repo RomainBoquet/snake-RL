@@ -5,7 +5,7 @@ from SnakeEnv import SnakeEnv
 env = SnakeEnv(grid_size=15)
 
 # Créez un agent PPO
-model = PPO("CnnPolicy", env, verbose=1)
+model = PPO("MlpPolicy", env, verbose=1)
 
 # Entraînez l'agent
 model.learn(total_timesteps=10000)
