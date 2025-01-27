@@ -47,13 +47,14 @@ class SnakeEnv(Env):
         reward = 0.  # Récompense mineure pour un déplacement (optionnel)
         self.done = False
 
-        # Nouvelles récompenses en fonction de la distance à la nourriture
         previous_distance = self._distance_to_food(self.snake[0])
         new_distance = self._distance_to_food(new_head)
 
-        # Récompense positive pour se rapprocher de la nourriture
         if new_distance < previous_distance:
-            reward += 3
+            reward += 1  # Récompense pour se rapprocher de la nourriture
+        elif new_distance > previous_distance:
+            reward -= 1  # Pénalité pour s'éloigner
+
 
 
         # Vérifier les collisions
@@ -63,13 +64,13 @@ class SnakeEnv(Env):
             new_head in self.snake
         ):
             self.done = True
-            reward = -100  # Récompense négative pour collision
+            reward = -10  # Récompense négative pour collision
             return self._get_observation(), reward, self.done, {}
 
         # Mise à jour du serpent
         self.snake.insert(0, new_head)
         if new_head == self.food:
-            reward = 100  # Récompense pour avoir mangé la nourriture
+            reward = 10  # Récompense pour avoir mangé la nourriture
             self.food = self._place_food()  # Placer une nouvelle nourriture
             self.score += 1
         else:
