@@ -13,6 +13,6 @@ model = PPO("CnnPolicy",
             verbose=1)
 
 # Entraînez l'agent
-model.learn(total_timesteps=50000)
+model.learn(total_timesteps=100000)
 
 model.save('models/ppo_snake_model_cnn')

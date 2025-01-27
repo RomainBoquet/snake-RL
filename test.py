@@ -5,15 +5,12 @@ from SnakeEnv import SnakeEnv
 model = PPO.load("models/ppo_snake_model_cnn")
 env = SnakeEnv(grid_size=10)
 
-for episode in range(100):  # Loop over episodes
-    obs = env.reset()  # Reset the environment at the start of each episode
+for episode in range(100): 
+    obs = env.reset()
     done = False
     cumulative_reward = 0
 
     while not done:
-        # Uncomment this line to see the environment rendered (requires pygame)
-        # env.render()
-
         # Get the action from the model
         action, _states = model.predict(obs)
         obs, reward, done, info = env.step(action)  # Take a step in the environment

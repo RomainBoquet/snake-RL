@@ -13,10 +13,15 @@ class SnakeEnv(Env):
         # Actions possibles: [0=haut, 1=bas, 2=gauche, 3=droite]
         self.action_space = Discrete(4)
         
-        # Observations: grille (matrice 2D avec état du jeu)
-        # 0 = vide, 1 = mur, 2 = nourriture, 3 = corps du serpent
+        # # Observations: grille (matrice 2D avec état du jeu)
+        # # 0 = vide, 1 = mur, 2 = nourriture, 3 = corps du serpent
+        # self.observation_space = Box(
+        #     low=0, high=3, shape=(self.grid_size, self.grid_size), dtype=np.uint8
+        # )
+         # Observations: grille (1 canal, grid_size x grid_size)
+        # Ajoutez une dimension pour la compatibilité CNN
         self.observation_space = Box(
-            low=0, high=3, shape=(self.grid_size, self.grid_size), dtype=np.uint8
+            low=0, high=3, shape=(1, self.grid_size, self.grid_size), dtype=np.uint8
         )
 
         # Initialisation du jeu
@@ -141,4 +146,4 @@ class SnakeEnv(Env):
         food_x, food_y = self.food
         grid[food_x, food_y] = 2
 
-        return grid
+        return grid[np.newaxis, :, :]
