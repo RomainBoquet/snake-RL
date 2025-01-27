@@ -9,6 +9,7 @@ class SnakeEnv(Env):
         super(SnakeEnv, self).__init__()
         self.grid_size = grid_size
         self.cell_size = 20
+        self.render_mode = "rgb_array"  # Indique que le mode rgb_array est supporté
 
         # Actions possibles: [0=haut, 1=bas, 2=gauche, 3=droite]
         self.action_space = Discrete(4)
@@ -84,30 +85,58 @@ class SnakeEnv(Env):
         # Retourner l'état
         return self._get_observation(), reward, self.done, {}
 
-
     def render(self, mode="human"):
-        """Affiche l'environnement à l'écran."""
-        pygame.init()
+        """Affiche ou retourne l'état de l'environnement."""
         screen_size = self.grid_size * self.cell_size
-        screen = pygame.display.set_mode((screen_size, screen_size))
-        screen.fill((0, 0, 0))
+        if mode == "human":
+            pygame.init()
+            screen = pygame.display.set_mode((screen_size, screen_size))
+            screen.fill((0, 0, 0))
 
-        # Dessine le serpent
-        for segment in self.snake:
+            # Dessine le serpent
+            for segment in self.snake:
+                rect = pygame.Rect(
+                    segment[1] * self.cell_size, segment[0] * self.cell_size,
+                    self.cell_size, self.cell_size
+                )
+                pygame.draw.rect(screen, (0, 255, 0), rect)
+
+            # Dessine la nourriture
             rect = pygame.Rect(
-                segment[1] * self.cell_size, segment[0] * self.cell_size,
+                self.food[1] * self.cell_size, self.food[0] * self.cell_size,
                 self.cell_size, self.cell_size
             )
-            pygame.draw.rect(screen, (0, 255, 0), rect)
+            pygame.draw.rect(screen, (255, 0, 0), rect)
 
-        # Dessine la nourriture
-        rect = pygame.Rect(
-            self.food[1] * self.cell_size, self.food[0] * self.cell_size,
-            self.cell_size, self.cell_size
-        )
-        pygame.draw.rect(screen, (255, 0, 0), rect)
+            pygame.display.flip()
 
-        pygame.display.flip()
+        elif mode == "rgb_array":
+            # Créez un écran virtuel pour capturer l'image
+            pygame.init()
+            screen = pygame.Surface((screen_size, screen_size))
+            screen.fill((0, 0, 0))
+
+            # Dessine le serpent
+            for segment in self.snake:
+                rect = pygame.Rect(
+                    segment[1] * self.cell_size, segment[0] * self.cell_size,
+                    self.cell_size, self.cell_size
+                )
+                pygame.draw.rect(screen, (0, 255, 0), rect)
+
+            # Dessine la nourriture
+            rect = pygame.Rect(
+                self.food[1] * self.cell_size, self.food[0] * self.cell_size,
+                self.cell_size, self.cell_size
+            )
+            pygame.draw.rect(screen, (255, 0, 0), rect)
+
+            # Retourne l'image sous forme d'un tableau NumPy
+            return np.array(pygame.surfarray.array3d(screen)).transpose(1, 0, 2)
+
+        else:
+            raise ValueError(f"Mode de rendu non supporté : {mode}")
+
 
     def _place_food(self):
         """Place la nourriture à un endroit aléatoire."""
