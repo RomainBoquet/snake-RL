@@ -44,8 +44,17 @@ class SnakeEnv(Env):
         new_head = (head_x + self.direction[0], head_y + self.direction[1])
 
         # Initialisation de reward à une valeur par défaut
-        reward = -0.1  # Récompense mineure pour un déplacement (optionnel)
+        reward = 0.  # Récompense mineure pour un déplacement (optionnel)
         self.done = False
+
+        # Nouvelles récompenses en fonction de la distance à la nourriture
+        previous_distance = self._distance_to_food(self.snake[0])
+        new_distance = self._distance_to_food(new_head)
+
+        # Récompense positive pour se rapprocher de la nourriture
+        if new_distance < previous_distance:
+            reward += 3
+
 
         # Vérifier les collisions
         if (
@@ -54,13 +63,13 @@ class SnakeEnv(Env):
             new_head in self.snake
         ):
             self.done = True
-            reward = -10  # Récompense négative pour collision
+            reward = -100  # Récompense négative pour collision
             return self._get_observation(), reward, self.done, {}
 
         # Mise à jour du serpent
         self.snake.insert(0, new_head)
         if new_head == self.food:
-            reward = 10  # Récompense pour avoir mangé la nourriture
+            reward = 100  # Récompense pour avoir mangé la nourriture
             self.food = self._place_food()  # Placer une nouvelle nourriture
             self.score += 1
         else:
@@ -100,6 +109,10 @@ class SnakeEnv(Env):
             food = (random.randint(0, self.grid_size - 1), random.randint(0, self.grid_size - 1))
             if food not in self.snake:
                 return food
+
+    def _distance_to_food(self, position):
+        """Calcule la distance de Manhattan entre une position donnée et la nourriture."""
+        return abs(position[0] - self.food[0]) + abs(position[1] - self.food[1])
 
     def _update_direction(self, action):
         """Met à jour la direction en fonction de l'action."""
