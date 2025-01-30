@@ -9,12 +9,12 @@ env = SnakeEnv(grid_size=10)
 
 model = PPO("MlpPolicy",
             env,
-            learning_rate=1e-4,
+            learning_rate=1e-3,
             n_steps=2048,
             batch_size=64,
-            verbose=1)
+            verbose=2)
 
 # Entraînez l'agent
 model.learn(total_timesteps=100000)
 
-model.save('models/ppo_snake_model_cnn')
+model.save('models/model_lr_1e-3_timestep_100000')
