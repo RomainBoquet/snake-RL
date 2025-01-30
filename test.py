@@ -1,17 +1,21 @@
 import time
 from stable_baselines3 import PPO
 from SnakeEnv import SnakeEnv
+from stable_baselines3.common.vec_env import DummyVecEnv
 
-model = PPO.load("models/model_lr_1e-3_timestep_100000.zip")
-env = SnakeEnv(grid_size=10)
+# Load the trained model
+model = PPO.load('models/model_lr_1e-3_timestep_100000')
 
-# for episode in range(100): 
+# Create the environment
+env = DummyVecEnv([lambda: SnakeEnv(grid_size=10, render_mode='human')])
+
+# Reset the environment
 obs = env.reset()
-done = False
+
 cumulative_reward = 0
+done = False
 
 while not done:
-    # Get the action from the model
     action, _states = model.predict(obs)
     obs, reward, done, info = env.step(action)  # Take a step in the environment
     cumulative_reward += reward
@@ -20,8 +24,6 @@ while not done:
     time.sleep(0.1)
     env.render()
 
-
-# print(f"Episode {episode + 1}: Cumulative Reward = {cumulative_reward}")
-
 env.close()
+print(cumulative_reward)
 print("Tests terminés!")

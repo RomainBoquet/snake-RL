@@ -1,34 +1,29 @@
 import pygame
 import random
 import numpy as np
-from gym import Env
-from gym.spaces import Discrete, Box
+import gymnasium as gym
+from gymnasium import spaces
 
-class SnakeEnv(Env):
-    def __init__(self, grid_size=20):
-        super(SnakeEnv, self).__init__()
+class SnakeEnv(gym.Env):
+    def __init__(self, grid_size=10, render_mode=None):
         self.grid_size = grid_size
         self.cell_size = 20
-        self.render_mode = "rgb_array"  # Indique que le mode rgb_array est supporté
+        self.render_mode = render_mode
 
         # Actions possibles: [0=haut, 1=bas, 2=gauche, 3=droite]
-        self.action_space = Discrete(4)
+        self.action_space = spaces.Discrete(4)
         
-        # # Observations: grille (matrice 2D avec état du jeu)
-        # # 0 = vide, 1 = mur, 2 = nourriture, 3 = corps du serpent
-        # self.observation_space = Box(
-        #     low=0, high=3, shape=(self.grid_size, self.grid_size), dtype=np.uint8
-        # )
-         # Observations: grille (1 canal, grid_size x grid_size)
+        # Observations: grille (1 canal, grid_size x grid_size)
         # Ajoutez une dimension pour la compatibilité CNN
-        self.observation_space = Box(
-            low=0, high=3, shape=(1, self.grid_size, self.grid_size), dtype=np.uint8
+        self.observation_space = spaces.Box(
+            low=0, high=1, shape=(self.grid_size, self.grid_size, 3), dtype=np.float32
         )
 
         # Initialisation du jeu
         self.reset()
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         """Réinitialise le jeu et retourne l'état initial."""
         self.snake = [(self.grid_size // 2, self.grid_size // 2)]  # Serpent au centre
         self.direction = (0, 1)  # Direction initiale (droite)
@@ -36,7 +31,7 @@ class SnakeEnv(Env):
         self.done = False
         self.score = 0
 
-        return self._get_observation()
+        return self._get_observation(), {}
 
     def step(self, action):
         """
@@ -71,7 +66,7 @@ class SnakeEnv(Env):
         ):
             self.done = True
             reward = -10  # Récompense négative pour collision
-            return self._get_observation(), reward, self.done, {}
+            return self._get_observation(), reward, self.done, False, {}
 
         # Mise à jour du serpent
         self.snake.insert(0, new_head)
@@ -80,15 +75,23 @@ class SnakeEnv(Env):
             self.food = self._place_food()  # Placer une nouvelle nourriture
             self.score += 1
         else:
+            reward = -0.1  # Small negative reward for each step taken
             self.snake.pop()  # Retirer la queue pour garder la taille
 
+        # Additional reward shaping
+        if abs(new_head[0] - self.food[0]) + abs(new_head[1] - self.food[1]) < abs(self.snake[0][0] - self.food[0]) + abs(self.snake[0][1] - self.food[1]):
+            reward += 0.1  # Small positive reward for moving closer to the food
+
         # Retourner l'état
-        return self._get_observation(), reward, self.done, {}
+        return self._get_observation(), reward, self.done, False, {}
 
     def render(self, mode="human"):
         """Affiche ou retourne l'état de l'environnement."""
         screen_size = self.grid_size * self.cell_size
-        if mode == "human":
+        if self.render_mode == "rgb_array":
+            # Return an RGB array representation of the environment
+            return np.zeros((self.grid_size, self.grid_size, 3), dtype=np.uint8)
+        elif mode == "human":
             pygame.init()
             screen = pygame.display.set_mode((screen_size, screen_size))
             screen.fill((0, 0, 0))
@@ -109,30 +112,6 @@ class SnakeEnv(Env):
             pygame.draw.rect(screen, (255, 0, 0), rect)
 
             pygame.display.flip()
-
-        elif mode == "rgb_array":
-            # Créez un écran virtuel pour capturer l'image
-            pygame.init()
-            screen = pygame.Surface((screen_size, screen_size))
-            screen.fill((0, 0, 0))
-
-            # Dessine le serpent
-            for segment in self.snake:
-                rect = pygame.Rect(
-                    segment[1] * self.cell_size, segment[0] * self.cell_size,
-                    self.cell_size, self.cell_size
-                )
-                pygame.draw.rect(screen, (0, 255, 0), rect)
-
-            # Dessine la nourriture
-            rect = pygame.Rect(
-                self.food[1] * self.cell_size, self.food[0] * self.cell_size,
-                self.cell_size, self.cell_size
-            )
-            pygame.draw.rect(screen, (255, 0, 0), rect)
-
-            # Retourne l'image sous forme d'un tableau NumPy
-            return np.array(pygame.surfarray.array3d(screen)).transpose(1, 0, 2)
 
         else:
             raise ValueError(f"Mode de rendu non supporté : {mode}")
@@ -162,17 +141,4 @@ class SnakeEnv(Env):
 
     def _get_observation(self):
         """Génère une observation représentant l'état actuel de la grille."""
-        grid = np.zeros((self.grid_size, self.grid_size), dtype=np.uint8)
-
-        # Ajoute les murs (facultatif)
-        # grid[0, :] = grid[-1, :] = grid[:, 0] = grid[:, -1] = 1
-
-        # Ajoute le serpent
-        for x, y in self.snake:
-            grid[x, y] = 3
-
-        # Ajoute la nourriture
-        food_x, food_y = self.food
-        grid[food_x, food_y] = 2
-
-        return grid[np.newaxis, :, :]
+        return np.zeros((self.grid_size, self.grid_size, 3), dtype=np.float32)
