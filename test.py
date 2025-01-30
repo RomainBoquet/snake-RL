@@ -2,7 +2,7 @@ import time
 from stable_baselines3 import PPO
 from SnakeEnv import SnakeEnv
 
-model = PPO.load("models/ppo_snake_model_cnn")
+model = PPO.load("models/model_lr_1e-3_timestep_100000.zip")
 env = SnakeEnv(grid_size=10)
 
 # for episode in range(100): 
