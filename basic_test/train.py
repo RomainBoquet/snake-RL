@@ -1,6 +1,6 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-from basic_test.basicEnv import SimpleGameEnv
+from basicEnv import SimpleGameEnv
 
 
 env = SimpleGameEnv()

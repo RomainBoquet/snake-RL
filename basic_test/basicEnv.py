@@ -2,6 +2,7 @@ import gym
 from gym import spaces
 import pygame
 import random
+import numpy as np
 
 class SimpleGameEnv(gym.Env):
     def __init__(self):
@@ -70,3 +71,7 @@ class SimpleGameEnv(gym.Env):
     def close(self):
         pygame.quit()
 
+
+    def seed(self, seed=None):
+        random.seed(seed)
+        np.random.seed(seed)
